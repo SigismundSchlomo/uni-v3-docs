@@ -1,35 +1,33 @@
 import { ethers } from 'ethers';
-import { Percent, ChainId, CHAIN_TO_ADDRESSES_MAP } from '@sigismund/sdk-core';
+import { Percent } from '@sigismund/sdk-core';
 import { Pool, Position, MintOptions, NonfungiblePositionManager, computePoolAddress, nearestUsableTick } from '@sigismund/v3-sdk';
-import { USDC_TOKEN_DEV, USDT_TOKEN_DEV, ERC20_ABI } from './constants';
 import IUniswapV3PoolABI from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json';
+import { 
+    DEV_USDC_TOKEN,
+    DEV_USDT_TOKEN,
+    ERC20_ABI,
+    DEV_V3_CORE_FACTORY_ADDRESS,
+    DEV_NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+    DEV_PROVIDER,
+    DEV_SIGNER,
+} from './constants';
 
-export const chainId = ChainId.AIRDAO_TEST;
-//export const V3_CORE_FACTORY_ADDRESS = CHAIN_TO_ADDRESSES_MAP[chainId].v3CoreFactoryAddress; //testnet
-const V3_CORE_FACTORY_ADDRESS = '0x8631AF99fB2A4aCaffF6Af7C6c5A696ADf163c2a'; //devnet
-
-//export const NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS: string =
-//    typeof CHAIN_TO_ADDRESSES_MAP[chainId].nonfungiblePositionManagerAddress == 'string'
-//        ? CHAIN_TO_ADDRESSES_MAP[chainId].nonfungiblePositionManagerAddress : '';
-const NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS = '0xD3FeB6dCdeA02ecD1FA5127535D2b624eE48b843'; //devnet
-
-export const provider = new ethers.providers.JsonRpcProvider('https://network.ambrosus-dev.io');
-export const wallet = new ethers.Wallet('0x72c61543e33446a5c38b79cdecaf6896d43b8fb8df133795d18570bf76a49079', provider);
-
+const provider = DEV_PROVIDER;
+const wallet = DEV_SIGNER;
 const SUM_TO_MINT = '100000';
 
 async function main() {
     try {
         // get aproval for USDC token transfer
         const usdcContract = new ethers.Contract(
-            USDC_TOKEN_DEV.address,
+            DEV_USDC_TOKEN.address,
             ERC20_ABI,
             wallet
         )
 
         const usdcApproval = await usdcContract.approve(
-            NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
-            ethers.utils.parseUnits(SUM_TO_MINT, USDC_TOKEN_DEV.decimals)
+            DEV_NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+            ethers.utils.parseUnits(SUM_TO_MINT, DEV_USDC_TOKEN.decimals)
         );
         await usdcApproval.wait();
         console.log('USDC aproval tx:', usdcApproval);
@@ -37,23 +35,23 @@ async function main() {
         
         // Get aproval for USDT token transfer
         const usdtContract = new ethers.Contract(
-            USDT_TOKEN_DEV.address,
+            DEV_USDT_TOKEN.address,
             ERC20_ABI,
             wallet
         )
 
         const usdtApproval = await usdtContract.approve(
-            NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
-            ethers.utils.parseUnits(SUM_TO_MINT, USDT_TOKEN_DEV.decimals)
+            DEV_NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+            ethers.utils.parseUnits(SUM_TO_MINT,DEV_USDT_TOKEN.decimals)
         );
         await usdtApproval.wait();
         console.log('USDT aproval tx:', usdtApproval);
 
         // Get pool info
         const currentPoolAddress = computePoolAddress({
-            factoryAddress: V3_CORE_FACTORY_ADDRESS,
-            tokenA: USDC_TOKEN_DEV,
-            tokenB: USDT_TOKEN_DEV,
+            factoryAddress: DEV_V3_CORE_FACTORY_ADDRESS,
+            tokenA: DEV_USDC_TOKEN,
+            tokenB: DEV_USDT_TOKEN,
             fee: 3000,
         })
 
@@ -77,8 +75,8 @@ async function main() {
 
         // Create pool 
         const pool = new Pool(
-            USDC_TOKEN_DEV,
-            USDT_TOKEN_DEV,
+            DEV_USDC_TOKEN,
+            DEV_USDT_TOKEN,
             fee,
             slot0.sqrtPriceX96.toString(),
             liquidity.toString(),
@@ -90,8 +88,8 @@ async function main() {
             pool,
             tickLower: nearestUsableTick(slot0.tick, tickSpacing) - tickSpacing * 2,
             tickUpper: nearestUsableTick(slot0.tick, tickSpacing) + tickSpacing * 2,
-            amount0: ethers.utils.parseUnits(SUM_TO_MINT, USDC_TOKEN_DEV.decimals).toString(),
-            amount1: ethers.utils.parseUnits(SUM_TO_MINT, USDT_TOKEN_DEV.decimals).toString(),
+            amount0: ethers.utils.parseUnits(SUM_TO_MINT, DEV_USDC_TOKEN.decimals).toString(),
+            amount1: ethers.utils.parseUnits(SUM_TO_MINT, DEV_USDT_TOKEN.decimals).toString(),
             useFullPrecision: true,
         });
 
@@ -109,7 +107,7 @@ async function main() {
         // Mint position
         const est_tx = {
             data: calldata,
-            to: NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+            to: DEV_NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
             value: value,
             from: wallet.address,
         };
@@ -125,8 +123,8 @@ async function main() {
         
 
         const txResponse = await wallet.sendTransaction(tx);
-        await txResponse.wait();
-        console.log('Mint tx:', txResponse);
+        const resp = await txResponse.wait();
+        console.log('Mint tx:', resp);
 
     } catch (e) {
         console.error(e);

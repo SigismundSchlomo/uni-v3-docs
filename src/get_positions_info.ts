@@ -1,17 +1,20 @@
 import { ethers } from 'ethers'
 import INONFUNGIBLE_POSITION_MANAGER from '@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json'
-import { NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS } from './constants'
+import { 
+    DEV_NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+    DEV_PROVIDER,
+    DEV_SIGNER
+} from './constants'
 
-const provider = new ethers.providers.JsonRpcProvider('https://network.ambrosus-test.io');
-const wallet = new ethers.Wallet('0x72c61543e33446a5c38b79cdecaf6896d43b8fb8df133795d18570bf76a49079', provider);
 
+const wallet = DEV_SIGNER
 
 async function main() {
     try {
         const nfpmContract = new ethers.Contract(
-            NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+            DEV_NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
             INONFUNGIBLE_POSITION_MANAGER.abi,
-            provider
+            DEV_PROVIDER
         )
 
         const numPositions = await nfpmContract.balanceOf(wallet.address);
