@@ -35,6 +35,7 @@ async function main() {
             provider
         )
 
+        // Getting the information about the pool
         const [fee, tickSpacing, liquidity, slot0] =
             await Promise.all([
             poolContract.fee(),
