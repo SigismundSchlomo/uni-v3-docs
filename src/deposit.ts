@@ -19,3 +19,4 @@ async function main() {
     console.log(receipt);
 }
 
+main();
