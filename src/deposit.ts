@@ -13,7 +13,7 @@ const contract = new ethers.Contract(
 
 
 async function main() {
-    const tx = await contract.deposit(ethers.utils.parseEther('1.0'));
+    const tx = await contract.deposit(ethers.utils.parseEther('1.0'), { signer: wallet });
     console.log(tx);
     const receipt = await tx.wait();
     console.log(receipt);
